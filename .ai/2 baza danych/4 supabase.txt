@@ -1,0 +1,22 @@
+zainstaluj supabase z instrukcji:
+https://supabase.com/docs/guides/local-development/cli/getting-started
+
+
+W repozytorium projektu uruchom następnie komendy:
+
+supabase init 
+
+supabase start
+
+Jezeli `supabase start` zwroci bład wykonaj prompt aby Cursor poprawił skrypt i ponownie wykonaj 
+supabase start
+
+sprawdz diagram oprzez adres
+http://127.0.0.1:54323/project/default/database/schemas
+
+
+wygeneruj typy komendą
+mkdir -p src/db/
+supabase gen types typescript --local > src/db/database.types.ts
+
+dodaj zmienna `.env` (w tym samym katalogu co `.env.example`)

@@ -1,0 +1,20 @@
+## Główny problem
+Ustalnie terminów wizyt pacjentów telefonicznie zajmuje dużo czasu i jest podatne na błędy.
+
+## Najmniejszy zestaw funkcjonalności
+- Rejestracja wizyty pacjenta na wybrany termin przez pacjenta i przez rejestrację gabinetu
+- Anulowanie wizyty przez pacjenta
+- Przeglądanie, edytowanie i usuwanie wizyt pacjentów przez rejestrację gabinetu
+- Pacjent może wybrać tylko wolny termin
+- Wizyta pierwszorazowa jest 2h
+- Każda kolejna wizyta jest 1h
+- Możliwość dodania notatki do wizyty
+- Możliwość dodania notatki do pacjenta
+
+## Co NIE wchodzi w zakres MVP
+- Aplikacja mobiolna (na poczatek tylko web)
+
+## Kryteria sukcesu
+- Rejestarcja gabinetu ma pełny wgląd w wizyty pacjentów, notatki pacjentów i notatki wizit
+- Pacjent nie ma wglądu do notatek wizyt i pacjentów
+- Pacjent może wybrać tylko wolny termin
