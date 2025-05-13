@@ -55,7 +55,8 @@ Wspólne elementy: navbar, footer, modale (profile, reset hasła, potwierdzenia)
 - **Rezerwacja wizyty** (`/patient/book`)
 
   - Cel: szybkie umówienie wizyty
-  - Kluczowe pola: `purpose`, `duration`, data z GET `/visits/next-available`
+  - Kluczowe pola: `purpose`, `duration`
+  - Źródło terminów: GET `/visits/next-available?page={page}&limit={limit}` (domyślnie limit=10), zwraca listę dostępnych slotów
   - Komponenty: `Input`, `Select`, `Button`, `Spinner`, `ErrorModal`
 
 - **Historia wizyt** (`/patient/visits`)

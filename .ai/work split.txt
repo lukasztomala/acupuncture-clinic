@@ -1,0 +1,173 @@
+Scope, assumptions & limitations:
+only one dashboard per Marvin instance is suppoerted (although Qs dashboards may have several sheets configured)
+
+every Marvin user who has permissions to see the dashboard will see the same scope of data in it (there’s no “row-level” security in places which might filter the data visualized in the dashboard based on viewers permissions or assignments)
+
+marvin users who have relevant permission will have the cpability of editing the dashboard, controlling user access to edit function is on marvin side
+
+in case there’s a need for QS user for the user to be able to use or edit the dashboard it will be automatically crerated and then automatically disposed after edit is completed (or sometiome later - anyay it won’t stay for ever, since it costs)
+
+the underlying dashboard dataset(-s) are subject data based (i.e. every dataset row corresponds to a single subject registered in the marvin instance) and contains the following information:
+
+SubjectKey
+
+Recruitment center information: OID, Name and DisplayName
+
+Treatment center information: OID, Name and DisplayName (where threatment center is resolved based on the most recent AuditRecord in the subject data, i.e. it’s the center where the most recent subject data transaction originates from)
+
+An arbitrary set of columns based on ECRF forms content where every column is configured by mapping it from an ItemData of specified ItemOID and resolved only in case there’s only one ItemData of that ItemOID in the whole subject data tree
+
+the process of mapping data into the dashboard disregards the sdv, lock, completness, review nor signature status of the data. The only status which is taken into account is deleted and disabled which are both considered as non-existing data
+
+there’s a several minutes latency of the data in the dashboard (vs. the data in the Marvin database) for usual transaction processing. The latency may become much longer (as high as several hours) for metadata related transactions, initial data load from Marvin or  processing transaction resulting from importing data into Marvin (where there’s a bulk of transactions applied to the data),
+
+there will be no possibilioty of modifying the definiotn (scope) of existsing dataset (dataset can be only created and removed). 
+
+[TECHNICAL] The solution will use registered user embed url (not anonymous one as the one we use in Phase 1) (since that leaves the option of switching from capacity pricing model to user based pricing model open, if we stick to anonymous URLs we’re bound to use capacity pricing model for viewers)
+
+The reporting service will allow to embedd a dataset management GUI (decided inREP-116: Decide on dataset definition GUI
+Done
+ )
+
+??? we should consider movbing out of capacity pricing model, to per-user pricing, mainly due to its better predictability, given the fact that with the target solution we do not have to use anonymous embedded URLS, and we probably won’t anyway ??? → REP-117: Decide on target viewers pricing model
+Open
+ 
+
+Work break down:
+[REP] Setup github repo (can use e2b-fgk-moozart-configurations as the t emplae just remove all schemas and js scripts, but leave the directories with .gitkeep files) → REP-107: [REP] Setup github repo for reporting service
+Open
+ 
+
+[PLAT] Define global configs collection to mainatin settings and secrets (here: for accessing reportDb and QS) → PLAT-582: [PLAT] Define global configs collection to mainatin settings and secrets
+Open
+ 
+
+[PLAT] Provide some mean for EE processes to access (possibly subset) of QS API (or may be there’s a way of proividing them with capabiliuty of accessing any AWS Service API) - the most straight forward way is to that the same as S3 access is done (but perhaps that’s not the most effective for the future). In case a subset we can start with those two (thy are surely needed) and then add more as the implementaion progresses and we need more (however it’d be best to provide some more generic way of accessing any AWS API) →  PLAT-584: EE access to AWS (QS & IAM) API 
+Open
+ :
+
+equivalent of aws quicksight create-data-set
+
+equivalent of aws quicksight delete-data-set
+
+[REP] Dataset defintion management API → REP-109: [REP] Dataset defintion management
+Open
+ :
+
+Define spaces/studies/reporting-datasets collection to create and maintain dataset definitions
+
+Make operations on the above being atomatically applied to reportDB (DB schema creation and removal)
+
+Make the operations on the above being automatically applied to relevant integrator sety-up (export set-up creation, cancellation and removal)
+
+Make the operations on the above being automatically applied to the QS dataset (QS dataset creation and removal)
+
+hjgbfckjdx.png
+(edit)
+
+Dataset definition management embeddable GUI:
+
+[PLAT] Emebedding/Delegation token generation feature: PLAT-587: [PLAT] Emebedding/delegation token feature
+Open
+ , PLAT-588: [PLAT] `delegations` collection to support delegation tokens feature
+Open
+ , PLAT-589: Adapt principal-access-control-library to work with delegation access token
+Open
+ , PLAT-591: Extend schema-engine `fetchUrl` function to allow for other methods than just GET as well as sending content to specified URLs
+Open
+ , PLAT-590: Adapt customer space service to work with delegation access tokens
+Open
+ 
+
+As a platform user or (application) client who/which has the access token (delegator) I want to generate another access token which is bound to my identity but grants only a specified subset of my access privileges so that I can pass that token over to them in order to allow them to act on my behalf. All transactions (audit entries) generated by delegatee user/client have to be distingushable as executed by this kind of delegation.
+
+As platform user or (application) client who/which has the access token (delegator) I want to pass the generate and pass the delgation token to another application in a secure way so that it can be recalimed only once and for short period of time.
+
+Draft of the implementation:
+
+We extend the platform-management-service with additional endpoint (usable by any authorized user) which initiates the delegation flow given user/client access token and (optionally) a set of resource access filters which is supposed to additionaly limit the scope of access rights delegated (in addition to limits implied by the original user/client access rights) and (optionallly with some default) the expiration time for the delegation and optionally some additional delgation metadata (entirely up to the delegator choice). Underneath the platform-management-service creates a delegation entity instance (we need a new global collection delegations ) when it stores the original (delegator) principalId, the access rights subset spec, the delegation expiration date-time, the delegation metadata, the digest of delegation authorization code generated (generated as a long secure random string) and the current timestamp (i.e. the timestamp of delegation authorization code generation). The endpoint returns delegation authorization code generated
+
+Then we extend the platform-management-service with additional endpoint for reclaiming delegation token, the endpoint receives delegation authorization code, then underneath it finds the delegation instance (by delegation authorization code digest), checks whether it’s not older than (say) 5 minutes, generates the delegation access token (a random string with some prefix or other characteristics which allows for fast identification as delegation access token), removes authorization code digest from the delegation instance and stores the digest of the generated delegation access token in it. (removing the digest of delegation authorization code prevent form reclaiming the delegation access token again, so it guarantees it can be reclaimed only once). The endpoint returns the delegation access token value.
+
+Then we modify platform-manageent-service authorization and ui-authorization enpoints logic so that it recognizes delegation tokens (in addition to regular access tokens) and resolves the permissions based on delegator rights and delegation scope. And possibly also Platform Access Ticket structure to allow for intersecting multiple set of privileges (currenlty it supports only one set of privileges which is a logical sum of rights implied by contained resource access filters).
+
+We modify principal-access-control library so that it identifies delegation token and verifies them with platform-management-service authorization endpoint and also takes into account the modified PAT structure (with intersecting permission sets). The library should also provide the information about the delegation in use in the security context, i.e. it shoud provide the identity of the user as the delegator but in addition it should provide the information of the delegation in use (could be e.g. the id of the delegation instance).
+
+We modify customer-space-service to use the modified principal-access-control-library and also to store the delegation information along the original prinicpal identity in the events metadata and audit logs.
+
+b. [REP] Emebddable dataset editing GUI ( REP-119: Embeddable data-set editing GUI
+Open
+ )
+
+pure frontend app
+
+recives the delegation authorization code in the URI (e.g. as a query param or fragment)
+
+reclaims the delegation token by means of relevant platform-management-service endpoint (see above)
+
+then renders the GUI which lists defined datasets, allow to cancel them, remove cancelled ones and define new ones (with some nice visual drag an drop GUI)
+
+c. [REP] Dataset edit GUI embedding service ( REP-120: [REP] Dataset edit GUI embedding service
+Open
+ )
+
+a POST .../spaces/{spaceId}/studies/{studyId}?query=reporting-embed-dataset-editor endpoint
+
+generates delegation authorization code (by means of the relevant platform-management-service endpoint → see above) using the client access token, limits the access to all non-privileged operations on the study data-sets collection and all GET operations on the study meta-data-versions.resolved and nested collections and GET operation on the study itself
+
+generates a HTML snippet with iframe referring to embeddable GUI app with the URI containing the delegation authorization code generated
+
+sends the snippet back to the client
+
+jknfboicgnxe.png
+(edit)
+
+Dashboard editing
+
+[PLAT] Improve CS EE query capability (or introduce another capability) so that it can do all the stuff EE Processes can do, e.g. so that HTTP POST request on the instance with some special query param could actually invoke a single process execution, and that execution can do everything EE process can do (including scheduling more executions or starting other processes, using all the APIs availabale to the process including input.context API) and also produce the result returned by the request (including HTTP status to return). Mind that in this case there may be a need to invoke the process defined in the collection the instance belongs to or some parent collection or even root process so that the process can access global config collections etc. → PLAT-585:  Improve CS EE query capability (or introduce another capability) so that it can do all the stuff EE Processes can
+In progress
+ 
+
+[REP] Embedd QS Console → REP-110: [REP] Embedd QS Console
+Open
+ 
+
+hjgbfckjdx.png
+(edit)
+
+[REP] Emebed dashboard (view mode): → REP-111: [REP] Emebed dashboard (view mode):
+Open
+ 
+
+hjgbfckjdx.png
+ (edit)
+
+[REP] Implement the process which removes inactive QS/IAM users and empty namespaces) created be the embedding requests before end of the month (say users who hasn’t been active for say 24hrs) → REP-112:  Implement the process which removes inactive QS/IAM users and empty namespaces
+Open
+ 
+
+hjgbfckjdx.png
+(edit)
+
+[REP] Implement testing instrumentation which forcefully cleanups QS/IAM users and namespace → REP-113:  Implement testing instrumentation which forcefully cleanups QS/IAM users and namespace
+Open
+ 
+
+hjgbfckjdx.png
+(edit)
+
+[MAR/REP] Implement edit mode emebdding with the new API, mind that there will be two steps to edit the dashboard: (mind that reporting service should be notified when embedding is done) → MAR-11272: [MAR] Implement dashboard editor (console) embedding
+Open
+ 
+
+[MAR] Implement view emebedding with the new API (mind that reporting service should be notified when embedding is done) → MAR-11273: [MAR] Implement dashboard (view) embedding
+Open
+ 
+
+[MAR] Implement dataset editor embedding in Marvin ( MAR-11277: Implement dataset editor embedding
+Open
+ )
+
+[REP] Quicksight account backup+restore (?? TBD: whether we need this right away or we can postpone it to future developement of rep service → REP-118: Decide on quicksight account/env backup+restore function
+Open
+ ?)

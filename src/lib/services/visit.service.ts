@@ -1,9 +1,9 @@
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { VisitCreateCommand } from "../schemas/visit.schema";
-import type { Tables } from "../../db/database.types";
+import type { Enums, Tables } from "../../db/database.types";
 import type { VisitListQueryParams } from "../schemas/visit.schema";
-import type { VisitDTO, PaginatedResponse } from "../../types";
+import type { VisitDTO, PaginatedResponse, NextAvailableDTO } from "../../types";
 import type { VisitUpdateCommand } from "../schemas/visit.schema";
 
 /**
@@ -28,13 +28,19 @@ const VisitService = {
       const err = { code: "TIME_CONFLICT", message: "Time conflict" } as PostgrestError;
       throw err;
     }
+
+    // Pobierz typ wizyty (first_time/follow_up) z funkcji RPC
+    const { data: visitType, error: visitTypeError } = await supabase.rpc("get_visit_type", { p_patient_id: userId });
+    if (visitTypeError) throw visitTypeError;
+
     const insertObj = {
       patient_id: userId,
       start_time: command.start_time,
       end_time: command.end_time,
       purpose: command.purpose,
+      visit_type: visitType as Enums<"visit_type_enum">,
     };
-    const { data, error } = await supabase.from("visits").insert(insertObj).single();
+    const { data, error } = await supabase.from("visits").insert(insertObj).select().single();
 
     if (error) {
       throw error;
@@ -90,19 +96,35 @@ const VisitService = {
     return data;
   },
   /**
-   * Computes next available time slot for a patient based on duration.
-   * Placeholder: returns next full hour >= 24h from now.
+   * Retrieves paginated next available appointment slots via RPC.
    */
   async nextAvailable(
     supabase: SupabaseClient,
     userId: string,
-    duration: 60 | 120
-  ): Promise<{ start_time: string; end_time: string }> {
-    // Simple placeholder algorithm
-    const now = new Date(Date.now() + 24 * 60 * 60000);
-    now.setUTCMinutes(0, 0, 0);
-    const end = new Date(now.getTime() + duration * 60000);
-    return { start_time: now.toISOString(), end_time: end.toISOString() };
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedResponse<NextAvailableDTO>> {
+    const { data, error } = await supabase.rpc("get_next_available_slots", {
+      p_patient_id: userId,
+      p_page: page,
+      p_limit: limit,
+    });
+    if (error) throw error;
+    let slots: NextAvailableDTO[] = [];
+    if (data) {
+      slots = (data as { start_time: string; end_time: string }[]).map((slot) => ({
+        start_time: new Date(slot.start_time).toISOString(),
+        end_time: new Date(slot.end_time).toISOString(),
+      }));
+    }
+    return {
+      data: slots,
+      meta: {
+        total: slots.length,
+        page,
+        limit,
+      },
+    };
   },
   /**
    * Updates an existing visit.

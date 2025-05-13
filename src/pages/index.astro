@@ -1,8 +1,43 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import HeroSection from "../components/HeroSection";
+import InfoSection from "../components/InfoSection";
+import type { InfoSectionData } from "../components/InfoSection";
+
+const heroData = {
+  title: "Witamy w Gabinecie Akupunktury",
+  subtitle: "Zarezerwuj wizytę online i zadbaj o swoje zdrowie już dziś.",
+  ctaText: "Zaloguj się",
+  ctaHref: "/login",
+};
+
+const infoSections: InfoSectionData[] = [
+  {
+    title: "Łatwe Rezerwacje",
+    text: "Szybko wybierz termin wizyty przez intuicyjny interfejs.",
+    imageSrc: "/images/reservation.jpg",
+    imageAlt: "Rezerwacja online",
+  },
+  {
+    title: "Doświadczony Specjalista",
+    text: "Nasz terapeuta posiada wieloletnie doświadczenie.",
+    imageSrc: "/images/therapist.jpg",
+    imageAlt: "Terapeuta akupunktury",
+  },
+  {
+    title: "Bezpieczeństwo i Wygoda",
+    text: "Dbamy o higienę i komfort naszych pacjentów.",
+    imageSrc: "/images/safety.jpg",
+    imageAlt: "Bezpieczeństwo higieny",
+  },
+];
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="Home">
+  <Navbar />
+  <HeroSection {...heroData} client:load />
+  {infoSections.map((section) => <InfoSection data={section} client:load />)}
+  <Footer />
 </Layout>

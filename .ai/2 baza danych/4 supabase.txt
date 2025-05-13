@@ -20,3 +20,5 @@ mkdir -p src/db/
 supabase gen types typescript --local > src/db/database.types.ts
 
 dodaj zmienna `.env` (w tym samym katalogu co `.env.example`)
+
+tymczasowo dodaj kolejna migrację aby cofnąc zmiany z RLS

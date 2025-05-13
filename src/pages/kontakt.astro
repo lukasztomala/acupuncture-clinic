@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import ContactForm from "../components/ContactForm";
+import MapEmbed from "../components/MapEmbed.astro";
+---
+
+<Layout title="Kontakt">
+  <Navbar />
+  <div class="max-w-md mx-auto mt-10 p-4">
+    <ContactForm client:load />
+  </div>
+  <MapEmbed />
+  <Footer />
+</Layout>

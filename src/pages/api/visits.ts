@@ -1,13 +1,11 @@
 // src/pages/api/visits.ts
 import { VisitCreateSchema, VisitListQuerySchema } from "../../lib/schemas/visit.schema";
 import VisitService from "../../lib/services/visit.service";
-import { PATIENT_LOCALS, WORKER_LOCALS } from "../../db/supabase.client";
 import type { PostgrestError } from "@supabase/supabase-js";
+import type { APIRoute } from "astro";
 
 // API route for creating visits
-export async function POST(context: { request: Request }): Promise<Response> {
-  const { request } = context;
-  const locals = PATIENT_LOCALS;
+export const POST: APIRoute = async ({ request, locals }) => {
   // Parse and validate request body
   let payload;
   try {
@@ -21,14 +19,9 @@ export async function POST(context: { request: Request }): Promise<Response> {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
   }
 
-  // Authorization: only patients can schedule visits
-  const { user, supabase } = locals;
-  if (user.role !== "patient") {
-    return new Response(null, { status: 403 });
-  }
-
   try {
-    const visit = await VisitService.create(supabase, user.user_id, payload);
+    const { user, supabase } = locals;
+    const visit = await VisitService.create(supabase, user.id, payload);
     return new Response(JSON.stringify(visit), { status: 201 });
   } catch (error: unknown) {
     const err = error as PostgrestError;
@@ -43,12 +36,10 @@ export async function POST(context: { request: Request }): Promise<Response> {
     // Fallback
     return new Response(JSON.stringify({ error: err.message ?? "Internal Server Error" }), { status: 500 });
   }
-}
+};
 
 // API route for listing visits
-export async function GET(context: { request: Request }): Promise<Response> {
-  const { request } = context;
-  const locals = WORKER_LOCALS;
+export const GET: APIRoute = async ({ request, locals }) => {
   const url = new URL(request.url);
   const rawQuery = {
     page: url.searchParams.get("page"),
@@ -68,4 +59,4 @@ export async function GET(context: { request: Request }): Promise<Response> {
     const err = error as PostgrestError;
     return new Response(JSON.stringify({ error: err.message ?? "Internal Server Error" }), { status: 500 });
   }
-}
+};

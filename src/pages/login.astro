@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import LoginForm from "../components/auth/LoginForm";
+---
+
+<Layout title="Logowanie">
+  <Navbar />
+
+  <div class="max-w-md mx-auto mt-10 p-4">
+    <LoginForm client:load />
+  </div>
+
+  <Footer />
+</Layout>

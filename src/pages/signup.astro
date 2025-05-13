@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SignupForm from "../components/auth/SignupForm";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout title="Rejestracja">
+  <Navbar />
+
+  <div class="max-w-md mx-auto mt-10 p-4">
+    <SignupForm client:load />
+  </div>
+
+  <Footer />
+</Layout>

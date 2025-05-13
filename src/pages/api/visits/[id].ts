@@ -1,11 +1,10 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import { VisitIdParamSchema, VisitUpdateSchema } from "../../../lib/schemas/visit.schema";
 import VisitService from "../../../lib/services/visit.service";
-import { PATIENT_LOCALS } from "../../../db/supabase.client";
+import type { APIRoute } from "astro";
 
 // API route for retrieving a single visit by ID
-export async function GET(context: { request: Request }): Promise<Response> {
-  const { request } = context;
+export const GET: APIRoute = async ({ request, locals }) => {
   // Extract ID from URL path
   const url = new URL(request.url);
   const segments = url.pathname.split("/");
@@ -19,8 +18,6 @@ export async function GET(context: { request: Request }): Promise<Response> {
   const { id: visitId } = parsed.data;
 
   // Use default patient context
-  const locals = PATIENT_LOCALS;
-
   try {
     const visit = await VisitService.getById(locals.supabase, locals.user.user_id, locals.user.role, visitId);
     return new Response(JSON.stringify(visit), { status: 200 });
@@ -34,11 +31,10 @@ export async function GET(context: { request: Request }): Promise<Response> {
     }
     return new Response(JSON.stringify({ error: err.message ?? "Internal Server Error" }), { status: 500 });
   }
-}
+};
 
 // API route for updating a visit by ID
-export async function PATCH(context: { request: Request }): Promise<Response> {
-  const { request } = context;
+export const PATCH: APIRoute = async ({ request, locals }) => {
   const url = new URL(request.url);
   const segments = url.pathname.split("/");
   const id = segments[segments.length - 1];
@@ -63,7 +59,6 @@ export async function PATCH(context: { request: Request }): Promise<Response> {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
   }
 
-  const locals = PATIENT_LOCALS;
   try {
     const updated = await VisitService.update(locals.supabase, locals.user.user_id, locals.user.role, visitId, payload);
     return new Response(JSON.stringify(updated), { status: 200 });
@@ -80,11 +75,10 @@ export async function PATCH(context: { request: Request }): Promise<Response> {
     }
     return new Response(JSON.stringify({ error: err.message ?? "Internal Server Error" }), { status: 500 });
   }
-}
+};
 
 // API route for deleting a visit by ID
-export async function DELETE(context: { request: Request }): Promise<Response> {
-  const { request } = context;
+export const DELETE: APIRoute = async ({ request, locals }) => {
   const url = new URL(request.url);
   const segments = url.pathname.split("/");
   const id = segments[segments.length - 1];
@@ -96,7 +90,6 @@ export async function DELETE(context: { request: Request }): Promise<Response> {
   }
   const { id: visitId } = idParsed.data;
 
-  const locals = PATIENT_LOCALS;
   try {
     await VisitService.delete(locals.supabase, locals.user.user_id, locals.user.role, visitId);
     return new Response(null, { status: 204 });
@@ -110,4 +103,4 @@ export async function DELETE(context: { request: Request }): Promise<Response> {
     }
     return new Response(JSON.stringify({ error: err.message ?? "Internal Server Error" }), { status: 500 });
   }
-}
+};

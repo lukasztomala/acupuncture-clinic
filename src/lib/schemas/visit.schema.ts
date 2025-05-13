@@ -67,14 +67,10 @@ export type { VisitIdParam };
 
 // Schema for next available visit query
 export const NextAvailableQuerySchema = z.object({
-  duration: z.preprocess(
+  page: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.number().int().min(1).default(1)),
+  limit: z.preprocess(
     (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-    z
-      .number()
-      .int()
-      .refine((d) => d === 60 || d === 120, {
-        message: "Duration must be 60 or 120",
-      })
+    z.number().int().min(1).max(50).default(10)
   ),
 });
 

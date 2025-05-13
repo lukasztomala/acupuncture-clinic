@@ -86,7 +86,8 @@ export type VisitListResponse = PaginatedResponse<VisitDTO>;
 
 // Query for next available visit
 export interface NextAvailableQuery {
-  duration: 60 | 120;
+  page?: number;
+  limit?: number;
 }
 
 // Response for next available visit
@@ -94,6 +95,9 @@ export interface NextAvailableDTO {
   start_time: VisitDTO["start_time"];
   end_time: VisitDTO["end_time"];
 }
+
+// Paginated response for next available visits
+export type NextAvailableResponse = PaginatedResponse<NextAvailableDTO>;
 
 // Payload for creating a visit
 export interface VisitCreateCommand extends Pick<VisitDTO, "start_time" | "end_time"> {
@@ -103,12 +107,23 @@ export interface VisitCreateCommand extends Pick<VisitDTO, "start_time" | "end_t
 // Payload for updating a visit
 export type VisitUpdateCommand = Partial<Pick<VisitDTO, "start_time" | "end_time" | "purpose">>;
 
+// ViewModel dla wizyt w tabeli
+export interface VisitVM {
+  id: string;
+  formattedStart: string; // dd.MM.yyyy HH:mm
+  formattedEnd: string;
+  purpose: string;
+}
+
 /**
  * Work Schedule
  */
 
 // Work schedule entry data transfer object
 export type WorkScheduleDTO = Tables<"work_schedule">;
+
+// List response type for work schedule entries
+export type WorkScheduleListResponse = WorkScheduleDTO[];
 
 // Payload for creating a work schedule entry
 export type WorkScheduleCreateCommand = Omit<WorkScheduleDTO, "id">;
@@ -123,6 +138,9 @@ export type WorkScheduleUpdateCommand = Partial<Omit<WorkScheduleDTO, "id">>;
 // Time block data transfer object
 export type TimeBlockDTO = Tables<"time_blocks">;
 
+// List response type for time blocks
+export type TimeBlockListResponse = TimeBlockDTO[];
+
 // Payload for creating a time block
 export type TimeBlockCreateCommand = Omit<TimeBlockDTO, "id" | "created_at" | "created_by">;
 
@@ -136,8 +154,25 @@ export type TimeBlockUpdateCommand = Partial<Pick<TimeBlockDTO, "start_time" | "
 // Note data transfer object
 export type NoteDTO = Tables<"notes">;
 
+// List response type for notes
+export type NoteListResponse = NoteDTO[];
+
 // Payload for creating a note
 export type NoteCreateCommand = Pick<NoteDTO, "content">;
 
 // Payload for updating a note
 export type NoteUpdateCommand = NoteCreateCommand;
+
+/**
+ * UI View Models for Work Schedule
+ */
+export interface ScheduleEntryVM {
+  id: string;
+  dayOfWeek: number;
+  dayLabel: string;
+  startTime: string;
+  endTime: string;
+}
+
+export type CreateScheduleVM = Omit<ScheduleEntryVM, "id" | "dayLabel">;
+export type UpdateScheduleVM = Partial<Omit<ScheduleEntryVM, "dayLabel">> & { id: string };

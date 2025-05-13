@@ -160,7 +160,7 @@ export interface Database {
           start_time: string;
           status?: Database["public"]["Enums"]["status_enum"];
           updated_at?: string;
-          visit_type?: Database["public"]["Enums"]["visit_type_enum"];
+          visit_type: Database["public"]["Enums"]["visit_type_enum"];
         };
         Update: {
           created_at?: string;
@@ -207,7 +207,19 @@ export interface Database {
       };
     };
     Views: Record<never, never>;
-    Functions: Record<never, never>;
+    Functions: {
+      get_next_available_slots: {
+        Args: { p_patient_id: string; p_page?: number; p_limit?: number };
+        Returns: {
+          start_time: string;
+          end_time: string;
+        }[];
+      };
+      get_visit_type: {
+        Args: { p_patient_id: string };
+        Returns: string;
+      };
+    };
     Enums: {
       role_enum: "role_patient" | "role_worker";
       status_enum: "scheduled" | "canceled" | "completed";

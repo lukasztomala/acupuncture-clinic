@@ -1,0 +1,14 @@
+Wykorzystaj dokumentację projektową @prd.md , specyfikację autentykacji @auth-spec.md do utworzenia diagramu zgodnie z regułami - @mermaid-diagram-ui.mdc  
+
+Zanim rozpoczniesz, przeszukaj codebase pod kątem elementów mogących brać udział w procesie autentykacji.
+
+
+
+Wykorzystaj dokumentację projektową @prd.md , specyfikację autentykacji @auth-spec.md do utworzenia diagramu zgodnie z regułami - @mermaid-diagram-auth.mdc   
+
+Zanim rozpoczniesz, przeszukaj codebase pod kątem elementów mogących brać udział w procesie autentykacji.
+
+
+Wykorzystaj dokumentację projektową @prd.md , specyfikację autentykacji @auth-spec.md do utworzenia diagramu zgodnie z regułami - @mermaid-diagram-jurney.mdc   
+
+Zanim rozpoczniesz, przeszukaj codebase pod kątem elementów mogących brać udział w procesie autentykacji.

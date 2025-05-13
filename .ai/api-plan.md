@@ -102,11 +102,14 @@
 
 #### GET /visits/next-available
 
-- description: compute next available appointment for current patient
+- description: compute next available appointment slots for current patient
 - authorization: bearer token (patient)
-- query parameters: `duration` minutes (60 or 120)
+- query parameters: `page` (default 1), `limit` (default 10)
 - responses:
-  - 200: { start_time: timestamptz, end_time: timestamptz }
+  - 200: {
+    data: [ { start_time: timestamptz, end_time: timestamptz } ],
+    meta: { total: number, page: number, limit: number }
+    }
   - 404: no availability
 
 #### POST /visits

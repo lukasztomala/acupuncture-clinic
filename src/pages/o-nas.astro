@@ -1,0 +1,27 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import ContentSection from "../components/ContentSection";
+import type { ContentSectionData } from "../components/ContentSection";
+import ImageGallery from "../components/ImageGallery";
+import type { GalleryImage } from "../components/ImageGallery";
+
+const contentSections: ContentSectionData[] = [
+  { heading: "Nasza misja", text: "Promujemy zdrowie i równowagę ciała poprzez akupunkturę." },
+  { heading: "Nasz zespół", text: "Zespół wykwalifikowanych terapeutów z pasją do leczenia." },
+];
+
+const galleryImages: GalleryImage[] = [
+  { src: "/images/therapist.jpg", alt: "Terapeuta akupunktury" },
+  { src: "/images/safety.jpg", alt: "Bezpieczeństwo higieny" },
+  { src: "/images/placeholder.jpg", alt: "Placeholder" },
+];
+---
+
+<Layout title="O nas">
+  <Navbar />
+  {contentSections.map((section) => <ContentSection data={section} client:load />)}
+  <ImageGallery images={galleryImages} client:load />
+  <Footer />
+</Layout>
